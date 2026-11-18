@@ -42,6 +42,8 @@ Usa los recuentos reales y resume las incidencias concretas. Para siguientes tan
 
 ## Descargas en el entorno en la nube
 
+La preferencia actual del usuario es Google Drive: aplica primero entrega-drive.md. La prueba de esta interfaz mostró que los enlaces locales y sandbox abrían el visor sin una descarga utilizable. No repitas esa vía como solución confirmada; lo siguiente sólo sirve para entornos que documenten y permitan descargas locales.
+
 1. Consulta primero las instrucciones de archivos del entorno actual. Usa su carpeta de entregas autorizada y su formato de enlaces; no fijes rutas de otra sesión como si existieran siempre.
 2. En entornos Codex Cloud que permitan entregar desde rutas absolutas y no impongan otra ubicación, se ha usado `/workspace/shared/downloads/`. Comprueba que esa carpeta es accesible y escribible y créala sólo si los permisos lo permiten. Copia allí únicamente el XLSX final y el ZIP de resultados solicitado; conserva los originales del resultado en el proyecto. Si ya existe una descarga con ese nombre, usa un sufijo de ejecución para no sobrescribirla. Este destino es una alternativa del entorno, no una garantía universal.
 3. Antes de enlazar, abre el XLSX con una biblioteca local: verifica la hoja Facturas, las 16 columnas y el número de filas de la tabla (la plantilla puede tener filas vacías con formato fuera de la tabla). Revisa los enlaces relativos a las copias, decodificando los caracteres escapados de las URL para comprobar los destinos. Comprueba la integridad del ZIP y que sólo contiene el Excel y las copias del cliente. Compara las copias de entrega con los archivos generados.

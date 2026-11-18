@@ -48,3 +48,7 @@ python 'NO TOCAR/skills/procesador-facturas/scripts/clientes.py' listar --root .
 ```
 
 Las pruebas usan datos sintéticos; no validan la precisión de interpretación de facturas reales. Consulta `NO TOCAR/README.md` para el uso original y la Skill para el procedimiento completo. El repositorio no incluye interfaz propia, servidor ni automatización al subir documentos.
+
+## Entrega preferida por Google Drive
+
+El agente tiene instrucciones para subir el Excel y el ZIP a Google Drive y devolver enlaces verificados cuando la sesión disponga de subida de archivos. La instalación del complemento no garantiza que sus herramientas estén disponibles en cada chat. Las carpetas se mantienen privadas y las salidas anteriores se conservan. Si falla la conexión, el agente informa de entrega pendiente y conserva el trabajo sin volver a interpretar las facturas.

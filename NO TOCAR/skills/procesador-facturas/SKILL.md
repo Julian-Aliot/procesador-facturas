@@ -5,6 +5,10 @@ description: Procesa carpetas locales de facturas por cliente, incluidas subcarp
 
 # Procesador de facturas · 0.8
 
+## Entrega en Google Drive
+
+El destino habitual elegido por el usuario es Google Drive. Sigue [entrega-drive.md](references/entrega-drive.md), comprueba la capacidad de subir archivos y devuelve enlaces verificados. No prometas descarga desde el visor local.
+
 ## Uso sencillo desde el chat
 
 Antes de procesar, sigue [uso-sencillo.md](references/uso-sencillo.md): acepta peticiones naturales, prepara carpetas y entorno, pide sólo los datos que falten y distingue tandas nuevas de ampliaciones del historial. No exige comandos al usuario ni cambia las reglas de extracción e integridad siguientes.

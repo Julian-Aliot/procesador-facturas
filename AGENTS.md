@@ -11,3 +11,6 @@ Ante peticiones de procesar facturas, aplica siempre `NO TOCAR/skills/procesador
 
 ## Descargas de resultados
 Sigue el apartado «Descargas en el entorno en la nube» de `NO TOCAR/skills/procesador-facturas/references/uso-sencillo.md`. Comprueba los archivos y entrega enlaces al Excel y al ZIP; un fallo en una carpeta de entrega no exige repetir el procesamiento. Respeta siempre la ubicación y los permisos de entrega establecidos por la sesión.
+
+## Entrega preferida: Google Drive
+El usuario ha elegido Google Drive como destino habitual del Excel y del ZIP de resultados. Aplica `NO TOCAR/skills/procesador-facturas/references/entrega-drive.md` en cada procesamiento. Comprueba primero la capacidad real de subida. Entrega enlaces verificados de Drive y distingue procesamiento completado de entrega pendiente. Los enlaces del visor local no acreditan una descarga.
