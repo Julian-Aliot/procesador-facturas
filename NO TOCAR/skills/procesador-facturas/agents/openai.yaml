@@ -1,0 +1,4 @@
+interface:
+  display_name: "Procesador de facturas"
+  short_description: "Facturas por cliente, Excel acumulado y enlaces a documentos"
+  default_prompt: "Usa $procesador-facturas para procesar las carpetas de clientes, copiar las facturas renombradas y actualizar un Excel por cliente conservando los originales."

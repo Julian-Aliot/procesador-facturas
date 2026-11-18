@@ -1,0 +1,19 @@
+# Los documentos y el estado persistente se conservan fuera del historial Git.
+/entrada/*
+!/entrada/.gitkeep
+/resultados/*
+!/resultados/.gitkeep
+/NO TOCAR/control/*
+!/NO TOCAR/control/.gitkeep
+/NO TOCAR/trabajo/*
+!/NO TOCAR/trabajo/.gitkeep
+/NO TOCAR/pruebas-temporales/*
+!/NO TOCAR/pruebas-temporales/.gitkeep
+__pycache__/
+*.py[cod]
+node_modules/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
