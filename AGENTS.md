@@ -8,3 +8,6 @@ Las facturas y el control están excluidos de Git. No los añadas a commits ni p
 
 ## Uso por personas sin conocimientos técnicos
 Ante peticiones de procesar facturas, aplica siempre `NO TOCAR/skills/procesador-facturas/references/uso-sencillo.md`. Acepta lenguaje natural y adjuntos; prepara las carpetas y comprueba dependencias sin pedir comandos al usuario. Pregunta el cliente sólo si falta o es ambiguo. Distingue primera tanda y continuación; no reinicies historiales ni prometas acumular sólo con un Excel. Entrega enlaces reales al Excel y al ZIP del cliente.
+
+## Descargas de resultados
+Sigue el apartado «Descargas en el entorno en la nube» de `NO TOCAR/skills/procesador-facturas/references/uso-sencillo.md`. Comprueba los archivos y entrega enlaces al Excel y al ZIP; un fallo en una carpeta de entrega no exige repetir el procesamiento. Respeta siempre la ubicación y los permisos de entrega establecidos por la sesión.
