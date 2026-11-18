@@ -22,4 +22,4 @@ Ejemplo: «Preparadas 16 facturas para Empresa A. Excel en Drive: <enlace verifi
 
 Si no se puede subir, di «Procesamiento terminado; entrega por Drive pendiente: <causa concreta>». Conserva los archivos generados y facilita el siguiente paso comprobable. No sustituyas esta entrega por enlaces al visor de Codex presentados como descargas. Una carpeta local llamada downloads no garantiza descarga en el PC del usuario. No subas resultados a GitHub ni a servicios públicos.
 
-Drive almacena los entregables, pero no es automáticamente una copia del estado acumulado. Para continuar un cliente en otro entorno siguen siendo necesarios originales, resultados y control compatibles; un Excel o ZIP de resultados no reconstruye todo el historial.
+Cada ejecución entrega sólo sus propios documentos. No busques ni recuperes historial en Drive y no combines entregas de un mismo cliente. La carpeta del cliente es organizativa, no una fuente de facturas previas. El usuario decide si combina archivos después.

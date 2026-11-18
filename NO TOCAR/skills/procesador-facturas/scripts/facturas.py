@@ -12,7 +12,7 @@ from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
-VERSION = "0.9.0"
+VERSION = "1.0.0"
 EXTENSIONES = {".pdf", ".jpg", ".jpeg", ".png"}
 EVIDENCIAS = ("proveedor", "nif_proveedor", "numero_factura", "fecha", "total", "moneda")
 COLUMNAS_SALIDA = [
@@ -53,8 +53,8 @@ def configuracion(root):
     if not config_path.is_file():
         config_path = root / "config" / "config.json"  # Proyectos antiguos aún no organizados.
     cfg = leer(config_path)
-    if cfg.get("modo") not in {"analisis", "clientes"}:
-        raise ValueError("modo debe ser analisis o clientes.")
+    if cfg.get("modo") not in {"analisis", "clientes", "envios"}:
+        raise ValueError("modo debe ser analisis, clientes o envios.")
     tolerancia = Decimal(str(cfg.get("tolerancia_importes", 0.02)))
     if not tolerancia.is_finite() or not 0 <= tolerancia <= Decimal("1"):
         raise ValueError("Tolerancia no válida (0 a 1).")

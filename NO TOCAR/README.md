@@ -1,53 +1,57 @@
-# Uso del procesador de facturas · 0.7
+# Procesador de facturas · 1.0
 
-Abre siempre PROCESADOR como proyecto de Codex. La carpeta principal muestra únicamente:
+Cada petición procesa exclusivamente sus documentos y genera un Excel de 18 columnas y copias ordenadas. Los envíos del mismo cliente permanecen separados. No se recupera historial ni se acumulan tandas. El usuario decide si combina los resultados después.
 
-```text
-PROCESADOR/
-├── entrada/
-│   └── Dubme/                 Facturas originales; puede haber subcarpetas
-├── resultados/
-│   └── Dubme/
-│       ├── Facturas_Dubme.xlsx
-│       └── facturas/          Copias renombradas
-└── NO TOCAR/                  Skill, configuración, registro y herramientas
+Repositorio: https://github.com/Julian-Aliot/procesador-facturas · rama main.
+
+## Uso por chat
+
+Abre el proyecto en Codex, adjunta un ZIP/PDF/imágenes y escribe:
+
+> Procesa este ZIP para Empresa A.
+
+El agente comprueba la última revisión de main, lee AGENTS.md y la Skill, pregunta el cliente sólo si falta, prepara una ejecución independiente y entrega el Excel y el ZIP en tu Drive conectado. No necesita registros ni Excels anteriores.
+
+Para actualizar una copia antigua en otra cuenta:
+
+> Descarga la última versión de main de https://github.com/Julian-Aliot/procesador-facturas en una carpeta nueva, lee AGENTS.md y sigue su Skill. Cada envío es independiente; no recuperes historial. Comprueba Google Drive y las dependencias antes de procesar.
+
+Las instrucciones actualizadas exigen comprobar main antes de cada envío, sin sobrescribir cambios locales ni cambiar el código durante un procesamiento. Una copia antigua debe actualizarse una primera vez para incorporar esta regla.
+
+## Preparación técnica
+
+Python 3.10+, openpyxl, Node y @oai/artifact-tool. El último depende del entorno Codex; no se presupone disponible en todos los entornos. Para PDF digital usa herramientas locales disponibles; los escaneos requieren visión. El agente no llama a APIs externas de IA u OCR ni instala dependencias silenciosamente.
+
+```bash
+source 'NO TOCAR/herramientas/entorno-codex.sh'
+python 'NO TOCAR/skills/procesador-facturas/scripts/envios.py' preparar --root . --cliente 'Empresa A' --archivos '/ruta/a/los/documentos-de-este-envio'
 ```
 
-## Nueva prueba en un chat nuevo
+El comando devuelve envio y lote. Codex completa extraccion.json del lote tras leer los documentos. Después:
 
-1. Añade facturas a `entrada/<cliente>/`, conservando las tandas anteriores y sus rutas.
-2. Cierra el Excel de resultados antes de procesar.
-3. Abre un chat nuevo dentro del proyecto PROCESADOR y escribe:
+```bash
+python 'NO TOCAR/skills/procesador-facturas/scripts/envios.py' completar --root . --envio '<envio devuelto>'
+```
 
-**$procesador-facturas Procesa las carpetas de clientes de entrada y actualiza sus Excel.**
+Sólo los documentos seleccionados se copian a una raíz aislada en NO TOCAR/trabajo/envios/<id>. Los resultados quedan en resultados/<cliente>/<id>. Los registros internos sirven para terminar/reintentar ese envío y nunca se cargan en uno nuevo.
 
-Para un único cliente: **$procesador-facturas Procesa entrada/Dubme y actualiza su Excel acumulado.**
+## Excel y controles
 
-La Skill ya está configurada en este ordenador. No hay que ejecutar scripts manualmente ni volver a explicar las reglas en el chat nuevo. Si no aparece en el selector, el archivo de instrucciones del proyecto también indica su ubicación; reinicia Codex si el selector no se actualiza.
+18 columnas. UE por país UE-27; CONCEPTO TOTAL junto a CONCEPTO, con una viñeta y coste explícito por línea; Partida al final: AUTONOMOS, FUNGIBLES u OTROS GASTOS según las reglas aprobadas. Ambigüedades y costes ausentes requieren revisión. No se inventan datos ni IVA cero.
 
-## Reglas
+Una fila y copia por documento compatible. Duplicados por número íntegro y total iguales únicamente dentro del envío. Las primeras copias permanecen blancas y las siguientes duplicadas amarillas. Se verifican originales, copias, filas, tipos de celda y enlaces relativos.
 
-Una copia y una fila por archivo compatible, aunque sea duplicado o dudoso. Repetir la ejecución no vuelve a añadir las mismas rutas. Los duplicados nuevos se marcan en el nombre, y con color y nota en el Excel. Los documentos dudosos mantienen sus celdas desconocidas vacías y se explican aparte. Se comprueba por cliente que entrada, copias y filas de tabla coincidan. No se suman monedas distintas.
+## Drive y privacidad
 
-El Excel tiene exactamente las 18 columnas confirmadas. IVA FACTURA contiene sólo el porcentaje; IMPORTE TOTAL CONCEPTO es el total final a pagar; el resumen está en español. CONCEPTO conserva el detalle completo, con guion y salto de línea para cada subconcepto cuando hay varios. Las filas son blancas salvo las copias duplicadas, que se resaltan en amarillo; la primera copia queda blanca. FECHA CONTABLE queda vacía sin regla de empresa. No se añaden columnas ocultas ni hojas auxiliares.
+Se suben el XLSX sin conversión y el ZIP de resultados a una carpeta privada por cliente y ejecución. Debe estar disponible una conexión que permita subir archivos. Se verifican las subidas y se devuelven enlaces reales. Los envíos anteriores se conservan sin sobrescribirlos. El ZIP incluye el Excel y facturas/ para mantener sus enlaces.
 
-Si falta o cambia un original, cambia una copia o hay una edición manual del Excel, se detiene para conciliar la diferencia, sin borrar información. Los formatos admitidos son PDF, JPG, JPEG y PNG; otros archivos se enumeran como excluidos. Los originales permanecen intactos.
+GitHub contiene sólo el programa. Documentos, resultados y controles están excluidos. No se suben allí facturas ni se hacen públicos los archivos de Drive. El complemento instalado no garantiza que sus herramientas estén disponibles en todos los chats.
 
-## Contenido técnico
+## Pruebas
 
-- `NO TOCAR/skills/procesador-facturas/`: única copia de la Skill, con scripts, referencias y plantilla.
-- `NO TOCAR/config/config.json`: configuración; rutas relativas a PROCESADOR.
-- `NO TOCAR/control/`: memoria persistente por cliente, lotes, transacciones, informes y copias del Excel anterior. No borrarla entre tandas.
-- `NO TOCAR/trabajo/analisis/`: resultados del modo de análisis sin archivo.
-- `NO TOCAR/historico/`: pruebas y versiones anteriores conservadas.
-- `NO TOCAR/herramientas/` y `NO TOCAR/tests/`: utilidades y comprobaciones de desarrollo.
+```bash
+source 'NO TOCAR/herramientas/entorno-codex.sh'
+python -m unittest discover -s 'NO TOCAR/tests' -v
+```
 
-En la raíz hay accesos técnicos ocultos para que Codex descubra automáticamente la Skill y las instrucciones. El enlace `.agents/skills/procesador-facturas` apunta a la única copia en NO TOCAR. No hay que tocarlo. El script de instalación restaura ese acceso local, sin generar otra copia de la Skill.
-
-## Compartir con compañeros
-
-Preparar un proyecto limpio con entrada y resultados vacías. Dentro de NO TOCAR distribuir sólo `skills/`, `config/`, `AGENTS.md`, este README y `Instalar-Skill.ps1`. No copiar control, históricos, herramientas con datos, facturas ni resultados reales. En el nuevo ordenador ejecutar `./NO TOCAR/Instalar-Skill.ps1 -Actualizar` desde PROCESADOR; ajustará el enlace a la ubicación de ese ordenador. Después abrir el proyecto en Codex.
-
-Se utiliza Python, Node y artifact-tool incluidos en Codex; no se añaden servidores ni APIs adicionales. La interpretación por Codex utiliza el servicio de OpenAI: usa documentos autorizados para ese entorno.
-
-La última columna ARCHIVO FACTURA permite abrir la copia renombrada con un clic. Usa un enlace relativo desde el Excel a facturas/<nombre>; al compartir, conserva el Excel y la subcarpeta facturas juntos. La duplicidad se decide exclusivamente por número íntegro y total final a pagar coincidentes dentro del cliente; no por hash ni por NIF.
+Los módulos acumulativos antiguos se conservan por compatibilidad y no se usan sobre clientes principales en el flujo habitual. Ningún cambio de modo borra historiales anteriores.

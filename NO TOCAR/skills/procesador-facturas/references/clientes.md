@@ -1,3 +1,7 @@
+# Flujo histórico: no usar como modo habitual
+
+Desde 1.0 el flujo predeterminado está en envios.md. Este documento describe utilidades internas/compatibilidad. No autoriza recuperar ni acumular datos de clientes entre envíos.
+
 # Flujo por cliente · 0.7
 
 ## Contrato confirmado por el usuario

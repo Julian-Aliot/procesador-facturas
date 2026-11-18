@@ -1,58 +1,57 @@
-# Procesador de facturas para Codex
+# Procesador de facturas · 1.0
 
-Proyecto para interpretar facturas con Codex y generar, por cliente, copias ordenadas y un Excel acumulado de 18 columnas. No llama a APIs de modelos ni a servicios OCR externos. La interpretación la realiza el agente; los scripts solos no interpretan las facturas.
+Cada petición procesa exclusivamente sus documentos y genera un Excel de 18 columnas y copias ordenadas. Los envíos del mismo cliente permanecen separados. No se recupera historial ni se acumulan tandas. El usuario decide si combina los resultados después.
 
-## Para usarlo sin conocimientos técnicos
+Repositorio: https://github.com/Julian-Aliot/procesador-facturas · rama main.
 
-Con el proyecto abierto en Codex y sus instrucciones disponibles, adjunta un ZIP o las facturas y escribe, por ejemplo:
+## Uso por chat
 
-- «Procesa estas facturas para Empresa A».
-- «Hazme el Excel de estos PDF para Empresa A».
-- «Añade estas facturas al historial de Empresa A».
+Abre el proyecto en Codex, adjunta un ZIP/PDF/imágenes y escribe:
 
-El agente prepara las carpetas, comprueba las dependencias y pregunta el cliente sólo si falta. Entrega el Excel y un ZIP con las copias ordenadas cuando los controles terminan. Si faltan documentos o hay un problema, explica el siguiente paso en lenguaje sencillo.
+> Procesa este ZIP para Empresa A.
 
-Para acumular en otra sesión no basta con el Excel ni con el ZIP de resultados: hacen falta también los originales y el registro de control compatible. Si falta el historial, el agente pedirá recuperarlo o permitirá elegir un resultado separado, sin dar por acumuladas las facturas anteriores. Los adjuntos y resultados no se suben a GitHub.
+El agente comprueba la última revisión de main, lee AGENTS.md y la Skill, pregunta el cliente sólo si falta, prepara una ejecución independiente y entrega el Excel y el ZIP en tu Drive conectado. No necesita registros ni Excels anteriores.
 
-## Abrir en Codex online
+Para actualizar una copia antigua en otra cuenta:
 
-1. Conecta y selecciona este repositorio en Codex y crea su entorno de trabajo.
-2. Pide que lea `AGENTS.md` y `NO TOCAR/skills/procesador-facturas/SKILL.md`.
-3. Comprueba el entorno ejecutando desde la raíz:
+> Descarga la última versión de main de https://github.com/Julian-Aliot/procesador-facturas en una carpeta nueva, lee AGENTS.md y sigue su Skill. Cada envío es independiente; no recuperes historial. Comprueba Google Drive y las dependencias antes de procesar.
 
-   ```bash
-   source 'NO TOCAR/herramientas/entorno-codex.sh'
-   ```
+Las instrucciones actualizadas exigen comprobar main antes de cada envío, sin sobrescribir cambios locales ni cambiar el código durante un procesamiento. Una copia antigua debe actualizarse una primera vez para incorporar esta regla.
 
-   Requiere Python 3.10+, openpyxl, Node y `@oai/artifact-tool`. El último es una dependencia del entorno Codex: no se presupone que esté disponible en todos los entornos ni se instala automáticamente. El ayudante detecta Node desde PATH; si las dependencias están en otra ubicación, configura `FACTURAS_NODE` y `FACTURAS_NODE_MODULES`. Las variables deben mantenerse en el proceso que ejecuta los scripts. Para leer PDF digital se recomienda pypdf o PyMuPDF; los escaneos necesitan visión disponible en la sesión.
+## Preparación técnica
 
-4. Lleva las facturas al entorno en `entrada/Prueba/<archivos>`, mediante las opciones de transferencia disponibles. Conectar GitHub no sube automáticamente los archivos del ordenador. Si la interfaz no admite adjuntos, se necesita otro mecanismo de transferencia autorizado.
-5. Escribe:
+Python 3.10+, openpyxl, Node y @oai/artifact-tool. El último depende del entorno Codex; no se presupone disponible en todos los entornos. Para PDF digital usa herramientas locales disponibles; los escaneos requieren visión. El agente no llama a APIs externas de IA u OCR ni instala dependencias silenciosamente.
 
-   > Lee AGENTS.md y la Skill. Comprueba el entorno de Excel. Procesa exclusivamente entrada/Prueba, conserva los originales y genera su Excel y sus copias en resultados/Prueba. Entrega un ZIP con esa carpeta completa e informa de los recuentos e incidencias.
+```bash
+source 'NO TOCAR/herramientas/entorno-codex.sh'
+python 'NO TOCAR/skills/procesador-facturas/scripts/envios.py' preparar --root . --cliente 'Empresa A' --archivos '/ruta/a/los/documentos-de-este-envio'
+```
 
-6. Descarga los resultados antes de finalizar el entorno. Conserva juntos el Excel y `facturas/` para mantener los enlaces.
+El comando devuelve envio y lote. Codex completa extraccion.json del lote tras leer los documentos. Después:
 
-## Estado y siguientes tandas
+```bash
+python 'NO TOCAR/skills/procesador-facturas/scripts/envios.py' completar --root . --envio '<envio devuelto>'
+```
 
-GitHub contiene el programa, no los documentos. `entrada/`, `resultados/`, `NO TOCAR/control/` y `NO TOCAR/trabajo/` están excluidos de Git. Un commit o una tarea nueva no conserva esos archivos. Para continuar un cliente en otro entorno, restaura conjuntamente originales, resultados y control desde una copia de seguridad privada. Los registros usan rutas del entorno: no reutilices un registro de otra raíz sin revisar su compatibilidad. No ejecutes dos escritores simultáneos sobre el mismo estado.
+Sólo los documentos seleccionados se copian a una raíz aislada en NO TOCAR/trabajo/envios/<id>. Los resultados quedan en resultados/<cliente>/<id>. Los registros internos sirven para terminar/reintentar ese envío y nunca se cargan en uno nuevo.
 
-Esta importación empieza sin clientes: excluye los documentos, resultados, controles, históricos, ensayos y auxiliares del paquete original. No reutiliza las rutas absolutas del ordenador de origen. Los ejemplos de nombres en la documentación original son ilustrativos.
+## Excel y controles
 
-## Verificación técnica
+18 columnas. UE por país UE-27; CONCEPTO TOTAL junto a CONCEPTO, con una viñeta y coste explícito por línea; Partida al final: AUTONOMOS, FUNGIBLES u OTROS GASTOS según las reglas aprobadas. Ambigüedades y costes ausentes requieren revisión. No se inventan datos ni IVA cero.
+
+Una fila y copia por documento compatible. Duplicados por número íntegro y total iguales únicamente dentro del envío. Las primeras copias permanecen blancas y las siguientes duplicadas amarillas. Se verifican originales, copias, filas, tipos de celda y enlaces relativos.
+
+## Drive y privacidad
+
+Se suben el XLSX sin conversión y el ZIP de resultados a una carpeta privada por cliente y ejecución. Debe estar disponible una conexión que permita subir archivos. Se verifican las subidas y se devuelven enlaces reales. Los envíos anteriores se conservan sin sobrescribirlos. El ZIP incluye el Excel y facturas/ para mantener sus enlaces.
+
+GitHub contiene sólo el programa. Documentos, resultados y controles están excluidos. No se suben allí facturas ni se hacen públicos los archivos de Drive. El complemento instalado no garantiza que sus herramientas estén disponibles en todos los chats.
+
+## Pruebas
 
 ```bash
 source 'NO TOCAR/herramientas/entorno-codex.sh'
 python -m unittest discover -s 'NO TOCAR/tests' -v
-python 'NO TOCAR/skills/procesador-facturas/scripts/clientes.py' listar --root .
 ```
 
-Las pruebas usan datos sintéticos; no validan la precisión de interpretación de facturas reales. Consulta `NO TOCAR/README.md` para el uso original y la Skill para el procedimiento completo. El repositorio no incluye interfaz propia, servidor ni automatización al subir documentos.
-
-## Entrega preferida por Google Drive
-
-El agente tiene instrucciones para subir el Excel y el ZIP a Google Drive y devolver enlaces verificados cuando la sesión disponga de subida de archivos. La instalación del complemento no garantiza que sus herramientas estén disponibles en cada chat. Las carpetas se mantienen privadas y las salidas anteriores se conservan. Si falla la conexión, el agente informa de entrega pendiente y conserva el trabajo sin volver a interpretar las facturas.
-
-## Formato 0.9: UE, desglose y partida
-
-El Excel tiene 18 columnas. UE se calcula por el país del proveedor y su pertenencia a UE-27 (no por territorio IVA). CONCEPTO TOTAL, junto a CONCEPTO, muestra una viñeta por línea con descripción y coste explícito; los costes ausentes se señalan. Partida es la última columna: AUTONOMOS para profesionales autónomos indicados en factura, FUNGIBLES para materiales consumibles y OTROS GASTOS para el resto, incluidas suscripciones/software. Facturas mixtas o inciertas requieren revisión. Las salidas anteriores no se sustituyen automáticamente; actualizar permite migrarlas con copia de seguridad.
+Los módulos acumulativos antiguos se conservan por compatibilidad y no se usan sobre clientes principales en el flujo habitual. Ningún cambio de modo borra historiales anteriores.
