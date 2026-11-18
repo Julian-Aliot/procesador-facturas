@@ -2,6 +2,18 @@
 
 Proyecto para interpretar facturas con Codex y generar, por cliente, copias ordenadas y un Excel acumulado de 16 columnas. No llama a APIs de modelos ni a servicios OCR externos. La interpretación la realiza el agente; los scripts solos no interpretan las facturas.
 
+## Para usarlo sin conocimientos técnicos
+
+Con el proyecto abierto en Codex y sus instrucciones disponibles, adjunta un ZIP o las facturas y escribe, por ejemplo:
+
+- «Procesa estas facturas para Empresa A».
+- «Hazme el Excel de estos PDF para Empresa A».
+- «Añade estas facturas al historial de Empresa A».
+
+El agente prepara las carpetas, comprueba las dependencias y pregunta el cliente sólo si falta. Entrega el Excel y un ZIP con las copias ordenadas cuando los controles terminan. Si faltan documentos o hay un problema, explica el siguiente paso en lenguaje sencillo.
+
+Para acumular en otra sesión no basta con el Excel ni con el ZIP de resultados: hacen falta también los originales y el registro de control compatible. Si falta el historial, el agente pedirá recuperarlo o permitirá elegir un resultado separado, sin dar por acumuladas las facturas anteriores. Los adjuntos y resultados no se suben a GitHub.
+
 ## Abrir en Codex online
 
 1. Conecta y selecciona este repositorio en Codex y crea su entorno de trabajo.

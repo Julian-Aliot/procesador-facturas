@@ -5,6 +5,10 @@ description: Procesa carpetas locales de facturas por cliente, incluidas subcarp
 
 # Procesador de facturas · 0.8
 
+## Uso sencillo desde el chat
+
+Antes de procesar, sigue [uso-sencillo.md](references/uso-sencillo.md): acepta peticiones naturales, prepara carpetas y entorno, pide sólo los datos que falten y distingue tandas nuevas de ampliaciones del historial. No exige comandos al usuario ni cambia las reglas de extracción e integridad siguientes.
+
 ## Alcance y configuración
 
 Interpreta con Codex y ejecuta la lógica determinista mediante `scripts/facturas.py`. No llames a APIs de modelos ni OCR adicionales. El script no contiene IA ni interpreta documentos por sí solo.
