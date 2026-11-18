@@ -7,7 +7,7 @@
 - Una ejecución repetida sobre las mismas rutas y contenidos no añade copias ni filas.
 - Conservar todas las tandas en entrada. No mover, borrar o renombrar originales.
 - Incluir archivos ilegibles, corruptos o con campos desconocidos: copiar los bytes disponibles, dejar vacías las celdas desconocidas y comunicar la incidencia aparte.
-- Un solo Excel de 16 columnas por cliente, acumulado entre tandas y ejercicios. No separar por año salvo que el usuario cambie esa regla.
+- Un solo Excel de 18 columnas por cliente, acumulado entre tandas y ejercicios. No separar por año salvo que el usuario cambie esa regla.
 - Cada PDF se trata como un documento/una fila. Si contiene varias facturas, señalarlo para revisión; no dividir silenciosamente ni inventar una factura resumen.
 
 Salida: `resultados/<cliente>/Facturas_<cliente>.xlsx` y `resultados/<cliente>/facturas/`. Las subcarpetas de entrada se aplanan en la salida. Los nombres son `NUMERO_PROVEEDOR.ext`; datos ausentes generan un nombre provisional explícito. Se conserva la extensión original de PDF o imagen, sin conversiones. Se añaden sufijos cuando hace falta evitar conflictos.
@@ -27,7 +27,7 @@ No sumar monedas distintas. Las columnas son exactamente las de `plantilla.md`; 
 
 Una factura es DUPLICADA únicamente si coincide el número de factura completo (sin espacios exteriores) y el total final a pagar, numéricamente exacto, con una anterior del mismo cliente. No usar hash, NIF, proveedor o fecha como clave alternativa. Si falta número o total, no asignar duplicado. El primer registro permanece blanco; sólo los siguientes se resaltan en amarillo. Todas las rutas conservan copia y fila. Los hashes se usan para integridad y reutilizar lecturas, no para clasificar duplicados.
 
-Todas las demás filas permanecen blancas. Otras incidencias se explican en la nota y en el informe interno. También los registros completamente desconocidos tienen una fila de tabla y una nota con su archivo, aunque las 16 celdas queden vacías. Los recuentos se hacen sobre filas de la tabla, no mediante CONTARA de una columna que puede tener valores ausentes.
+Todas las demás filas permanecen blancas. Otras incidencias se explican en la nota y en el informe interno. También los registros completamente desconocidos tienen una fila de tabla y una nota con su archivo, aunque las 18 celdas queden vacías. Los recuentos se hacen sobre filas de la tabla, no mediante CONTARA de una columna que puede tener valores ausentes.
 
 ## Integridad y fallos
 
@@ -41,6 +41,8 @@ Si hay un archivo accesible pero corrupto, puede copiarse y registrarse como dud
 
 ## Actualizar un Excel existente
 
-Para aplicar cambios de formato sin añadir archivos, usa `python "<skill>/scripts/clientes.py" actualizar --root <proyecto> --cliente <nombre>`. Para completar conceptos ya registrados, añade `--datos <json>` con `{"facturas":[{"archivo_original":"ruta.pdf","sha256":"hash original","subconceptos":["Servicio completo", "Otro servicio"]}]}`. Relee los originales antes de preparar las correcciones. Sólo se admiten ajustes de concepto; rutas y hashes deben coincidir con el registro. Se conservan copias y filas, se verifica integridad y se guarda copia de seguridad del Excel anterior. El libro debe estar cerrado. No edites el registro directamente.
+Para aplicar cambios de formato sin añadir archivos, usa `python "<skill>/scripts/clientes.py" actualizar --root <proyecto> --cliente <nombre>`. Para completar conceptos ya registrados, añade `--datos <json>` con `{"facturas":[{"archivo_original":"ruta.pdf","sha256":"hash original","subconceptos":["Servicio completo", "Otro servicio"]}]}`. Relee los originales antes de preparar las correcciones. Se admiten ajustes de concepto, lineas_concepto, tipo_gasto/partida y pais_codigo respaldados por los originales; rutas y hashes deben coincidir con el registro. Se conservan copias y filas, se verifica integridad y se guarda copia de seguridad del Excel anterior. El libro debe estar cerrado. No edites el registro directamente.
 
 La última columna ARCHIVO FACTURA permite abrir la copia renombrada con un clic. Usa un enlace relativo desde el Excel a facturas/<nombre>; al compartir, conserva el Excel y la subcarpeta facturas juntos. La duplicidad se decide exclusivamente por número íntegro y total final a pagar coincidentes dentro del cliente; no por hash ni por NIF.
+
+Migración 0.9: actualizar acepta libros anteriores de 15/16 columnas, verifica sus identidades y genera el libro de 18 con copia de seguridad. Completa los campos nuevos mediante --datos tras releer los originales. Sin datos conservados, los campos nuevos quedan pendientes; no inventa costes ni partidas. No es necesario borrar el historial.

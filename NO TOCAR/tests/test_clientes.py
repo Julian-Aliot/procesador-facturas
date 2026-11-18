@@ -91,9 +91,9 @@ class Clientes(unittest.TestCase):
         self.assertEqual(before,{p.name:c.base.sha256(p) for p in Path(first['carpeta_facturas']).iterdir()})
         wb=load_workbook(updated['excel']); sh=wb['Facturas']
         self.assertEqual(sh['K6'].value,'- Línea uno\n- Línea dos')
-        self.assertEqual(sh['O6'].value,'21 %')
-        self.assertEqual(sh['P6'].value,'Abrir factura')
-        self.assertTrue(sh['P6'].hyperlink.target.startswith('facturas/'))
+        self.assertEqual(sh['P6'].value,'21 %')
+        self.assertEqual(sh['Q6'].value,'Abrir factura')
+        self.assertTrue(sh['Q6'].hyperlink.target.startswith('facturas/'))
         self.assertTrue(sh['A6'].fill.fgColor.rgb.endswith('FFFFFF'))
         self.assertTrue(sh['A7'].fill.fgColor.rgb.endswith('FFF2CC'))
         wb.close()
@@ -227,6 +227,30 @@ class Clientes(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'entrada ha cambiado'):
             self.completar(prepared)
         self.assertFalse((self.root/'resultados/Cliente A').exists())
+
+    def test_migra_libro_antiguo_conservando_copias(self):
+        self.archivo('a.pdf')
+        first = self.completar(self.preparar())
+        excel = Path(first['excel'])
+        wb = load_workbook(excel); sh = wb['Facturas']
+        sh.delete_cols(18); sh.delete_cols(12)
+        table = sh.tables['RegistroFacturas']
+        table.ref = 'A5:P6'
+        from openpyxl.worksheet.table import TableColumn
+        table.tableColumns = [TableColumn(id=i+1,name=sh.cell(5,i+1).value) for i in range(16)]
+        if table.autoFilter: table.autoFilter.ref = table.ref
+        wb.save(excel); wb.close()
+        # Estado sintético: simula el hash guardado antes de migrar el formato.
+        ledger_path = next((self.root/'NO TOCAR/control').glob('*/registro.json'))
+        ledger = json.loads(ledger_path.read_text())
+        ledger['excel_sha256'] = c.base.sha256(excel)
+        ledger_path.write_text(json.dumps(ledger))
+        self.assertEqual(c.filas_excel(excel),1)
+        updated = c.actualizar(self.root,CFG,'Cliente A')
+        wb = load_workbook(updated['excel'])
+        self.assertEqual(wb['Facturas'].max_column,18)
+        self.assertIsNotNone(wb['Facturas']['Q6'].hyperlink)
+        wb.close()
 
     def test_bloqueo_y_otros_archivos(self):
         self.archivo('a.pdf')

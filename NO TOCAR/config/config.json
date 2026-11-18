@@ -1,23 +1,37 @@
 {
-  "version": "0.8.0",
+  "version": "0.9.0",
   "formato_salida": "xlsx",
   "modo": "clientes",
   "entrada": "entrada",
   "resultados": "resultados",
   "control": "NO TOCAR/control",
   "trabajo_analisis": "NO TOCAR/trabajo/analisis",
-  "cliente": {"nombre": null, "nif": null},
+  "cliente": {
+    "nombre": null,
+    "nif": null
+  },
   "ejercicio": null,
   "recursivo": true,
   "tolerancia_importes": 0.02,
   "fecha_minima": "2000-01-01",
   "dias_futuros_permitidos": 31,
-  "campos_obligatorios": ["proveedor", "nif_proveedor", "numero_factura", "fecha", "base_imponible", "importe_iva", "total", "moneda"],
+  "campos_obligatorios": [
+    "proveedor",
+    "nif_proveedor",
+    "numero_factura",
+    "fecha",
+    "base_imponible",
+    "importe_iva",
+    "total",
+    "moneda"
+  ],
   "version_esquema": "1.0",
   "salida_campos": {
     "iva_factura": "porcentaje",
     "importe_total_concepto": "total_a_pagar",
     "idioma_resumen": "es",
-    "fecha_contable": "sin_regla"
+    "fecha_contable": "sin_regla",
+    "ue": "pertenencia_pais_ue27",
+    "partida": "reglas_aprobadas"
   }
 }

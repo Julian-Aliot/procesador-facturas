@@ -29,7 +29,7 @@ La Skill ya está configurada en este ordenador. No hay que ejecutar scripts man
 
 Una copia y una fila por archivo compatible, aunque sea duplicado o dudoso. Repetir la ejecución no vuelve a añadir las mismas rutas. Los duplicados nuevos se marcan en el nombre, y con color y nota en el Excel. Los documentos dudosos mantienen sus celdas desconocidas vacías y se explican aparte. Se comprueba por cliente que entrada, copias y filas de tabla coincidan. No se suman monedas distintas.
 
-El Excel tiene exactamente las 16 columnas confirmadas. IVA FACTURA contiene sólo el porcentaje; IMPORTE TOTAL CONCEPTO es el total final a pagar; el resumen está en español. CONCEPTO conserva el detalle completo, con guion y salto de línea para cada subconcepto cuando hay varios. Las filas son blancas salvo las copias duplicadas, que se resaltan en amarillo; la primera copia queda blanca. FECHA CONTABLE queda vacía sin regla de empresa. No se añaden columnas ocultas ni hojas auxiliares.
+El Excel tiene exactamente las 18 columnas confirmadas. IVA FACTURA contiene sólo el porcentaje; IMPORTE TOTAL CONCEPTO es el total final a pagar; el resumen está en español. CONCEPTO conserva el detalle completo, con guion y salto de línea para cada subconcepto cuando hay varios. Las filas son blancas salvo las copias duplicadas, que se resaltan en amarillo; la primera copia queda blanca. FECHA CONTABLE queda vacía sin regla de empresa. No se añaden columnas ocultas ni hojas auxiliares.
 
 Si falta o cambia un original, cambia una copia o hay una edición manual del Excel, se detiene para conciliar la diferencia, sin borrar información. Los formatos admitidos son PDF, JPG, JPEG y PNG; otros archivos se enumeran como excluidos. Los originales permanecen intactos.
 

@@ -12,13 +12,13 @@ from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
-VERSION = "0.8.0"
+VERSION = "0.9.0"
 EXTENSIONES = {".pdf", ".jpg", ".jpeg", ".png"}
 EVIDENCIAS = ("proveedor", "nif_proveedor", "numero_factura", "fecha", "total", "moneda")
 COLUMNAS_SALIDA = [
     "NOMBRE RECEPTOR", "NOMBRE PROVEEDOR", "CIF", "EXT O NAC", "PAIS", "UE",
-    "Nº FACTURA", "FECHA", "AÑO", "FECHA CONTABLE", "CONCEPTO",
-    "TRADUCCIÓN RESUMEN CONCEPTO", "IMPORTE TOTAL CONCEPTO", "BASE IMPONIBLE", "IVA FACTURA", "ARCHIVO FACTURA",
+    "Nº FACTURA", "FECHA", "AÑO", "FECHA CONTABLE", "CONCEPTO", "CONCEPTO TOTAL",
+    "TRADUCCIÓN RESUMEN CONCEPTO", "IMPORTE TOTAL CONCEPTO", "BASE IMPONIBLE", "IVA FACTURA", "ARCHIVO FACTURA", "Partida",
 ]
 
 
@@ -66,9 +66,9 @@ def vacia(item):
         "tipo_documento", "proveedor", "nif_proveedor", "receptor", "nif_receptor",
         "numero_factura", "fecha", "concepto", "pais_proveedor", "base_imponible",
         "importe_iva", "total", "moneda", "observaciones", "ext_o_nac", "ue",
-        "fecha_contable", "resumen_concepto", "mencion_tributaria")}
+        "fecha_contable", "resumen_concepto", "mencion_tributaria", "partida", "pais_codigo", "tipo_gasto")}
     record.update(archivo_original=item["archivo_original"], sha256=item["sha256"],
-                  impuestos=[], ajustes=[], evidencias={}, motivos_revision=[], subconceptos=[])
+                  impuestos=[], ajustes=[], evidencias={}, motivos_revision=[], subconceptos=[], lineas_concepto=[])
     return record
 
 
@@ -205,6 +205,19 @@ def validar_factura(f, cfg, hoy=None):
         ev = evidence.get(field)
         if not isinstance(ev, dict) or type(ev.get("pagina")) is not int or ev["pagina"] < 1 or not texto(ev.get("texto")):
             reasons.append(f"Falta evidencia de {field}")
+    if pertenencia_ue(f) is None:
+        reasons.append('País desconocido o ambiguo: UE pendiente')
+    if partida_visible(f) is None:
+        reasons.append('Partida pendiente: clasificar con las reglas acordadas')
+    if not f.get('lineas_concepto'):
+        reasons.append('Desglose con costes pendiente: releer el documento')
+    else:
+        try:
+            concepto_total(f)
+            if any(line.get('coste') is None for line in f['lineas_concepto']):
+                reasons.append('Hay subconceptos sin coste indicado')
+        except (ValueError, TypeError, InvalidOperation) as ex:
+            reasons.append('Desglose de conceptos no válido: ' + str(ex))
     return list(dict.fromkeys(reasons))
 
 
@@ -262,6 +275,69 @@ def concepto_completo(f):
     return f.get('concepto')
 
 
+# Pertenencia política a UE-27; no equivale al territorio fiscal del IVA.
+PAISES_UE = {
+ 'AT':'austria', 'BE':'belgica|belgium', 'BG':'bulgaria',
+ 'HR':'croacia|croatia', 'CY':'chipre|cyprus', 'CZ':'chequia|republica checa|czechia|czech republic',
+ 'DK':'dinamarca|denmark', 'EE':'estonia', 'FI':'finlandia|finland',
+ 'FR':'francia|france', 'DE':'alemania|germany|deutschland', 'GR':'grecia|greece',
+ 'HU':'hungria|hungary', 'IE':'irlanda|ireland', 'IT':'italia|italy',
+ 'LV':'letonia|latvia', 'LT':'lituania|lithuania', 'LU':'luxemburgo|luxembourg',
+ 'MT':'malta', 'NL':'paises bajos|netherlands|the netherlands|holanda',
+ 'PL':'polonia|poland', 'PT':'portugal', 'RO':'rumania|romania',
+ 'SK':'eslovaquia|slovakia', 'SI':'eslovenia|slovenia', 'ES':'espana|spain', 'SE':'suecia|sweden'}
+PAISES_NO_UE = {'GB':'reino unido|united kingdom|uk|great britain',
+ 'US':'estados unidos|united states|united states of america|usa|eeuu',
+ 'CH':'suiza|switzerland', 'NO':'noruega|norway', 'IS':'islandia|iceland',
+ 'CA':'canada', 'CN':'china', 'JP':'japon|japan', 'AU':'australia',
+ 'MX':'mexico', 'AR':'argentina', 'BR':'brasil|brazil', 'IN':'india',
+ 'AD':'andorra', 'TR':'turquia|turkey|turkiye', 'UA':'ucrania|ukraine'}
+
+def normalizar_pais(value):
+    if not isinstance(value, str):
+        return ''
+    return ''.join(c for c in unicodedata.normalize('NFKD', value.casefold().strip())
+                   if not unicodedata.combining(c))
+
+def pertenencia_ue(f):
+    raw = normalizar_pais(f.get('pais_proveedor'))
+    code = f.get('pais_codigo')
+    # Un código ISO extraído/normalizado debe estar sustentado en el país del documento.
+    for paises, result in [(PAISES_UE, 'SI'), (PAISES_NO_UE, 'NO')]:
+        for iso, names in paises.items():
+            if raw in [iso.casefold(), *names.split('|')]:
+                return result
+    if raw and code in set(('AD AE AF AG AI AL AM AO AQ AR AS AT AU AW AX AZ BA BB BD BE BF BG BH BI BJ BL BM BN BO BQ BR BS BT BV BW BY BZ CA CC CD CF CG CH CI CK CL CM CN CO CR CU CV CW CX CY CZ DE DJ DK DM DO DZ EC EE EG EH ER ES ET FI FJ FK FM FO FR GA GB GD GE GF GG GH GI GL GM GN GP GQ GR GS GT GU GW GY HK HM HN HR HT HU ID IE IL IM IN IO IQ IR IS IT JE JM JO JP KE KG KH KI KM KN KP KR KW KY KZ LA LB LC LI LK LR LS LT LU LV LY MA MC MD ME MF MG MH MK ML MM MN MO MP MQ MR MS MT MU MV MW MX MY MZ NA NC NE NF NG NI NL NO NP NR NU NZ OM PA PE PF PG PH PK PL PM PN PR PS PT PW PY QA RE RO RS RU RW SA SB SC SD SE SG SH SI SJ SK SL SM SN SO SR SS ST SV SX SY SZ TC TD TF TG TH TJ TK TL TM TN TO TR TT TV TW TZ UA UG UM US UY UZ VA VC VE VG VI VN VU WF WS YE YT ZA ZM ZW').split()):
+        return 'SI' if code in PAISES_UE else 'NO'
+    return None
+
+def concepto_total(f):
+    lines = f.get('lineas_concepto')
+    if not isinstance(lines, list) or not lines:
+        return None
+    rendered = []
+    for line in lines:
+        if not isinstance(line, dict) or not texto(line.get('descripcion')):
+            raise ValueError('Cada línea requiere descripción')
+        amount = line.get('coste')
+        if amount is None:
+            cost = 'coste no indicado'
+        else:
+            cost = f'{numero(amount):.2f}'.replace('.', ',')
+            currency = line.get('moneda') or f.get('moneda')
+            if isinstance(currency, str) and re.fullmatch('[A-Z]{3}', currency):
+                cost += ' ' + currency
+        rendered.append('• ' + line['descripcion'].strip() + ' — ' + cost)
+    return '\n'.join(rendered)
+
+def partida_visible(f):
+    # tipo_gasto lo interpreta el agente con las reglas aprobadas y evidencias.
+    category = {'autonomo':'AUTONOMOS', 'consumible':'FUNGIBLES', 'otro':'OTROS GASTOS'}
+    if f.get('tipo_gasto') in category:
+        return category[f['tipo_gasto']]
+    return f.get('partida') if f.get('partida') in category.values() else None
+
+
 def identidad_factura(f):
     """Número literal (sin espacios exteriores) y total exacto; nunca hash/NIF."""
     number = f.get('numero_factura')
@@ -275,7 +351,7 @@ def identidad_factura(f):
 
 
 def fila_salida(f, cfg):
-    """Proyección de sólo 15 columnas; no inventa definiciones pendientes."""
+    """Proyección de 18 columnas sin inventar importes ni clasificaciones."""
     rules = cfg.get("salida_campos", {})
     try:
         year = date.fromisoformat(f.get("fecha")).year
@@ -296,9 +372,9 @@ def fila_salida(f, cfg):
     if accounting_date is None and rules.get("fecha_contable") == "fecha_factura":
         accounting_date = f.get("fecha")
     return [f.get("receptor"), f.get("proveedor"), f.get("nif_proveedor"),
-            f.get("ext_o_nac"), f.get("pais_proveedor"), f.get("ue"),
+            f.get("ext_o_nac"), f.get("pais_proveedor"), pertenencia_ue(f),
             f.get("numero_factura"), f.get("fecha"), year, accounting_date,
-            concepto_completo(f), summary, amount, f.get("base_imponible"), iva, None]
+            concepto_completo(f), concepto_total(f), summary, amount, f.get("base_imponible"), iva, None, partida_visible(f)]
 
 
 def marcas_excel(ordered):

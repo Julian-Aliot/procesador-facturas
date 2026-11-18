@@ -148,9 +148,10 @@ def filas_excel(path):
             raise ValueError('El Excel debe contener una sola tabla')
         table = ET.fromstring(archive.read(tables[0]))
         cols = table.find('m:tableColumns',ns)
-        if [c.attrib['name'] for c in cols] not in (base.COLUMNAS_SALIDA,base.COLUMNAS_SALIDA[:-1]):
+        legacy = [c for c in base.COLUMNAS_SALIDA if c not in {'CONCEPTO TOTAL','Partida'}]
+        if [c.attrib['name'] for c in cols] not in (base.COLUMNAS_SALIDA,legacy,legacy[:-1]):
             raise ValueError('El Excel no tiene las columnas acordadas')
-        ref = re.fullmatch(r'A5:[OP](\d+)',table.attrib['ref'])
+        ref = re.fullmatch(r'A5:[OPR](\d+)',table.attrib['ref'])
         if not ref:
             raise ValueError('Rango de tabla inesperado')
         return int(ref[1]) - 5
@@ -411,12 +412,15 @@ def actualizar(root,cfg,cliente,datos=None,entrada=None):
                 raise ValueError('Las correcciones deben contener una lista facturas')
             seen=set()
             for update in updates:
-                if not isinstance(update,dict) or set(update)-{'archivo_original','sha256','subconceptos','concepto'}:
-                    raise ValueError('Sólo se admiten correcciones de concepto y subconceptos')
+                if not isinstance(update,dict) or set(update)-{'archivo_original','sha256','subconceptos','concepto','lineas_concepto','partida','tipo_gasto','pais_codigo'}:
+                    raise ValueError('Sólo se admiten correcciones de concepto, desglose, país y partida')
                 name=update.get('archivo_original')
                 if name in seen or name not in items or update.get('sha256')!=items[name]['sha256']:
                     raise ValueError('Identidad de corrección no válida')
                 seen.add(name)
+                for field in ('lineas_concepto', 'partida', 'tipo_gasto', 'pais_codigo'):
+                    if field in update:
+                        items[name]['datos'][field] = update[field]
                 if 'subconceptos' in update:
                     parts=update['subconceptos']
                     if not isinstance(parts,list) or not parts or not all(base.texto(p) for p in parts):

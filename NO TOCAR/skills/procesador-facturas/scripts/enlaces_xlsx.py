@@ -35,7 +35,7 @@ def incorporar_enlaces(path, archivos):
             rid+='x'
         used.add(rid)
         ET.SubElement(rels,'{'+PKG+'}Relationship',{'Id':rid,'Type':REL+'/hyperlink','Target':quote('facturas/'+name,safe='/'),'TargetMode':'External'})
-        ET.SubElement(links,'{'+MAIN+'}hyperlink',{'ref':'P'+str(row),'{'+REL+'}id':rid,'display':'Abrir factura'})
+        ET.SubElement(links,'{'+MAIN+'}hyperlink',{'ref':'Q'+str(row),'{'+REL+'}id':rid,'display':'Abrir factura'})
     old=sheet.find('{'+MAIN+'}hyperlinks')
     if old is not None:
         sheet.remove(old)

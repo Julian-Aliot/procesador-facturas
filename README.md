@@ -1,6 +1,6 @@
 # Procesador de facturas para Codex
 
-Proyecto para interpretar facturas con Codex y generar, por cliente, copias ordenadas y un Excel acumulado de 16 columnas. No llama a APIs de modelos ni a servicios OCR externos. La interpretación la realiza el agente; los scripts solos no interpretan las facturas.
+Proyecto para interpretar facturas con Codex y generar, por cliente, copias ordenadas y un Excel acumulado de 18 columnas. No llama a APIs de modelos ni a servicios OCR externos. La interpretación la realiza el agente; los scripts solos no interpretan las facturas.
 
 ## Para usarlo sin conocimientos técnicos
 
@@ -52,3 +52,7 @@ Las pruebas usan datos sintéticos; no validan la precisión de interpretación 
 ## Entrega preferida por Google Drive
 
 El agente tiene instrucciones para subir el Excel y el ZIP a Google Drive y devolver enlaces verificados cuando la sesión disponga de subida de archivos. La instalación del complemento no garantiza que sus herramientas estén disponibles en cada chat. Las carpetas se mantienen privadas y las salidas anteriores se conservan. Si falla la conexión, el agente informa de entrega pendiente y conserva el trabajo sin volver a interpretar las facturas.
+
+## Formato 0.9: UE, desglose y partida
+
+El Excel tiene 18 columnas. UE se calcula por el país del proveedor y su pertenencia a UE-27 (no por territorio IVA). CONCEPTO TOTAL, junto a CONCEPTO, muestra una viñeta por línea con descripción y coste explícito; los costes ausentes se señalan. Partida es la última columna: AUTONOMOS para profesionales autónomos indicados en factura, FUNGIBLES para materiales consumibles y OTROS GASTOS para el resto, incluidas suscripciones/software. Facturas mixtas o inciertas requieren revisión. Las salidas anteriores no se sustituyen automáticamente; actualizar permite migrarlas con copia de seguridad.
