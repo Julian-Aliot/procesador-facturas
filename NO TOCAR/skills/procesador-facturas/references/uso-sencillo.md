@@ -10,9 +10,9 @@ Si alguien pide «añadir al Excel anterior», explica que el modo actual produc
 
 Prepara carpetas y comprueba dependencias automáticamente. Comprueba la posibilidad de subida a Drive al empezar, para no prometer una entrega no disponible. No instales dependencias silenciosamente.
 
-Usa lenguaje sencillo. Explica problemas concretos y conserva los datos desconocidos vacíos. Al terminar entrega dos enlaces verificados de Drive, los recuentos y las incidencias reales. Si sólo falla subir, conserva los archivos y reintenta la entrega sin reprocesar.
+Usa lenguaje sencillo. Explica problemas concretos y conserva los datos desconocidos vacíos. Al terminar entrega un enlace verificado al ZIP en Drive, los recuentos y las incidencias reales. Si sólo falla subir, conserva los archivos y reintenta la entrega sin reprocesar.
 
-Ejemplo: «Preparadas 12 facturas para Empresa A en este envío: 12 copias y 12 filas. Hay 2 duplicados dentro del envío y 1 documento para revisar. [Excel en Drive] · [ZIP en Drive]».
+Ejemplo: «Preparadas 12 facturas para Empresa A en este envío: 12 copias y 12 filas. Hay 2 duplicados dentro del envío y 1 documento para revisar. [ZIP en Drive]».
 
 Los resultados quedan separados por id de envío. El usuario decide si los combina después. No se mantienen ni recuperan historiales de cliente en el flujo habitual.
 

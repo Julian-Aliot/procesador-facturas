@@ -1,6 +1,6 @@
 # Procesador de facturas · 1.0
 
-Cada petición procesa exclusivamente sus documentos y genera un Excel de 18 columnas y copias ordenadas. Los envíos del mismo cliente permanecen separados. No se recupera historial ni se acumulan tandas. El usuario decide si combina los resultados después.
+Cada petición procesa exclusivamente sus documentos y genera un Excel de 19 columnas y copias ordenadas. Los envíos del mismo cliente permanecen separados. No se recupera historial ni se acumulan tandas. El usuario decide si combina los resultados después.
 
 Repositorio: https://github.com/Julian-Aliot/procesador-facturas · rama main.
 
@@ -10,7 +10,7 @@ Abre el proyecto en Codex, adjunta un ZIP/PDF/imágenes y escribe:
 
 > Procesa este ZIP para Empresa A.
 
-El agente comprueba la última revisión de main, lee AGENTS.md y la Skill, pregunta el cliente sólo si falta, prepara una ejecución independiente y entrega el Excel y el ZIP en tu Drive conectado. No necesita registros ni Excels anteriores.
+El agente comprueba la última revisión de main, lee AGENTS.md y la Skill, pregunta el cliente sólo si falta, prepara una ejecución independiente y entrega únicamente el ZIP en tu Drive conectado. No necesita registros ni Excels anteriores.
 
 Para actualizar una copia antigua en otra cuenta:
 
@@ -37,13 +37,13 @@ Sólo los documentos seleccionados se copian a una raíz aislada en NO TOCAR/tra
 
 ## Excel y controles
 
-18 columnas. UE por país UE-27; CONCEPTO TOTAL junto a CONCEPTO, con una viñeta y coste explícito por línea; Partida al final: AUTONOMOS, FUNGIBLES u OTROS GASTOS según las reglas aprobadas. Ambigüedades y costes ausentes requieren revisión. No se inventan datos ni IVA cero.
+19 columnas. UE por país UE-27; CONCEPTO TOTAL junto a CONCEPTO, con una viñeta y coste explícito por línea; Partida al final: COLABORADORAS u OTROS GASTOS según las reglas aprobadas. Ambigüedades y costes ausentes requieren revisión. No se inventan datos ni IVA cero.
 
-Una fila y copia por documento compatible. Duplicados por número íntegro y total iguales únicamente dentro del envío. Las primeras copias permanecen blancas y las siguientes duplicadas amarillas. Se verifican originales, copias, filas, tipos de celda y enlaces relativos.
+Una fila y copia por documento compatible. Duplicados por número íntegro y total iguales únicamente dentro del envío. Todas las filas permanecen blancas y las duplicadas conservan un aviso en las notas. Se verifican originales, copias, filas, tipos de celda y enlaces relativos.
 
 ## Drive y privacidad
 
-Se suben el XLSX sin conversión y el ZIP de resultados a una carpeta privada por cliente y ejecución. Debe estar disponible una conexión que permita subir archivos. Se verifican las subidas y se devuelven enlaces reales. Los envíos anteriores se conservan sin sobrescribirlos. El ZIP incluye el Excel y facturas/ para mantener sus enlaces.
+Se sube únicamente el ZIP de resultados a una carpeta privada por cliente y ejecución. Debe estar disponible una conexión que permita subir archivos. Se verifican las subidas y se devuelven enlaces reales. Los envíos anteriores se conservan sin sobrescribirlos. El ZIP incluye el Excel y facturas/ para mantener sus enlaces.
 
 GitHub contiene sólo el programa. Documentos, resultados y controles están excluidos. No se suben allí facturas ni se hacen públicos los archivos de Drive. El complemento instalado no garantiza que sus herramientas estén disponibles en todos los chats.
 

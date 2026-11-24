@@ -65,29 +65,29 @@ class Validaciones(unittest.TestCase):
         self.assertEqual(m.seguro("CON"), "_CON")
         self.assertTrue(m.celda_csv("=HYPERLINK(1)").startswith("'"))
 
-    def test_salida_exactamente_18_columnas(self):
+    def test_salida_exactamente_19_columnas(self):
         f = factura()
         f.update(receptor="Cliente", resumen_concepto="Desarrollo de software", concepto="Software development", fecha_contable=None)
         row = m.fila_salida(f, CFG)
-        self.assertEqual(len(m.COLUMNAS_SALIDA), 18)
-        self.assertEqual(len(row), 18)
+        self.assertEqual(len(m.COLUMNAS_SALIDA), 19)
+        self.assertEqual(len(row), 19)
         self.assertEqual(row[0], "Cliente")
-        self.assertEqual(row[8], 2026)
-        self.assertIsNone(row[9])
-        self.assertEqual(row[12], "Desarrollo de software")
-        self.assertEqual(row[13], 176)
-        self.assertEqual(row[14], 150)
-        self.assertEqual(row[15], "21 % / 10 %")
+        self.assertEqual(row[7], 2026)
+        self.assertIsNone(row[8])
+        self.assertEqual(row[11], "Desarrollo de software")
+        self.assertEqual(row[12], 176)
+        self.assertEqual(row[13], 150)
+        self.assertEqual(row[16], "21 % / 10 %")
         self.assertNotIn("Estado", m.COLUMNAS_SALIDA)
 
     def test_porcentajes_y_conceptos_completos(self):
         f = factura()
         f['subconceptos'] = ['Servicio 01-02-2025; 2 horas', 'Otro servicio', 'Otro servicio']
-        self.assertEqual(m.fila_salida(f, CFG)[10], '- Servicio 01-02-2025; 2 horas\n- Otro servicio\n- Otro servicio')
+        self.assertEqual(m.fila_salida(f, CFG)[9], '- Servicio 01-02-2025; 2 horas\n- Otro servicio\n- Otro servicio')
         f['impuestos'] = [{'tipo': 0, 'cuota': 0}]
-        self.assertEqual(m.fila_salida(f, CFG)[15], '0 %')
+        self.assertEqual(m.fila_salida(f, CFG)[16], '0 %')
         f['impuestos'] = [{'tipo': None, 'literal_tipo': 'EAM', 'cuota': 0}]
-        self.assertIsNone(m.fila_salida(f, CFG)[15])
+        self.assertIsNone(m.fila_salida(f, CFG)[16])
 
     def test_iva_literal_no_inventa_cero(self):
         f = factura()
@@ -120,7 +120,7 @@ class Validaciones(unittest.TestCase):
                 exported = list(csv.reader(stream, delimiter=";"))
             self.assertEqual(exported[0], m.COLUMNAS_SALIDA)
             self.assertEqual(len(exported), 3)
-            self.assertTrue(all(len(row) == 18 for row in exported))
+            self.assertTrue(all(len(row) == 19 for row in exported))
             self.assertEqual(report["recuentos"]["duplicado"], 1)
             self.assertEqual(m.sha256(root / "entrada/a.pdf"), original)
             (root / "entrada/a.pdf").write_bytes(b"contenido cambiado")
@@ -160,22 +160,24 @@ class Validaciones(unittest.TestCase):
             w = load_workbook(p)
             self.assertEqual(w.sheetnames, ["Facturas"])
             s = w["Facturas"]
-            self.assertEqual(s.max_column, 18)
+            self.assertEqual(s.max_column, 19)
+            self.assertEqual(s.max_row, 7)
+            self.assertIn("$S$7", str(s.print_area))
             self.assertEqual([c.value for c in s[5]], m.COLUMNAS_SALIDA)
-            self.assertIsInstance(s["H6"].value, datetime)
-            self.assertEqual(s["H6"].value.month, 9)
-            self.assertNotEqual(s["G6"].data_type, "f")
-            self.assertEqual(s["G7"].value, "001")
-            self.assertEqual(s["N6"].value, 176)
-            self.assertIn('USD', s["N6"].number_format)
-            self.assertIn('EUR', s["O7"].number_format)
-            self.assertIsNone(s["J6"].value)
+            self.assertIsInstance(s["G6"].value, datetime)
+            self.assertEqual(s["G6"].value.month, 9)
+            self.assertNotEqual(s["F6"].data_type, "f")
+            self.assertEqual(s["F7"].value, "001")
+            self.assertEqual(s["M6"].value, 176)
+            self.assertIn('USD', s["M6"].number_format)
+            self.assertIn('EUR', s["N7"].number_format)
+            self.assertIsNone(s["I6"].value)
             w.close()
             with self.assertRaises(FileExistsError):
                 m.generar_excel(run, "prueba", results, CFG)
 
 
-if __name__ == "__main__":
+if __name__ == "main__":
     unittest.main()
 
 class ColumnasNuevas(unittest.TestCase):
@@ -187,9 +189,9 @@ class ColumnasNuevas(unittest.TestCase):
     def test_desglose_costes_y_partidas(self):
         f=factura();f['lineas_concepto']=[{'descripcion':'Licencia A','coste':20},{'descripcion':'Licencia B','coste':None}]
         row=m.fila_salida(f,CFG)
-        self.assertEqual(row[11],'• Licencia A — 20,00 EUR\n• Licencia B — coste no indicado')
-        for tipo,partida in [('autonomo','AUTONOMOS'),('consumible','FUNGIBLES'),('otro','OTROS GASTOS'),('mixto',None)]:
+        self.assertEqual(row[10],'• Licencia A — 20,00 EUR\n• Licencia B — coste no indicado')
+        for tipo,partida in [('autonomo','COLABORADORAS'),('consumible','OTROS GASTOS'),('servicio','COLABORADORAS'),('otro','OTROS GASTOS'),('mixto',None)]:
             f['tipo_gasto']=tipo
-            self.assertEqual(m.fila_salida(f,CFG)[17],partida)
+            self.assertEqual(m.fila_salida(f,CFG)[18],partida)
         f['lineas_concepto'][0]['coste']=True
         with self.assertRaises(ValueError):m.concepto_total(f)

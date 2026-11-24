@@ -12,13 +12,13 @@ from datetime import date, datetime, timedelta, timezone
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 EXTENSIONES = {".pdf", ".jpg", ".jpeg", ".png"}
 EVIDENCIAS = ("proveedor", "nif_proveedor", "numero_factura", "fecha", "total", "moneda")
 COLUMNAS_SALIDA = [
-    "NOMBRE RECEPTOR", "NOMBRE PROVEEDOR", "CIF", "EXT O NAC", "PAIS", "UE",
+    "NOMBRE RECEPTOR", "NOMBRE PROVEEDOR", "CIF", "PAIS", "UE",
     "Nº FACTURA", "FECHA", "AÑO", "FECHA CONTABLE", "CONCEPTO", "CONCEPTO TOTAL",
-    "TRADUCCIÓN RESUMEN CONCEPTO", "IMPORTE TOTAL CONCEPTO", "BASE IMPONIBLE", "IVA FACTURA", "ARCHIVO FACTURA", "Partida",
+    "TRADUCCIÓN RESUMEN CONCEPTO", "IMPORTE TOTAL CONCEPTO", "BASE IMPONIBLE", "IMPORTE TOTAL CONCEPTO EUROS", "BASE IMPONIBLE EUROS", "IVA FACTURA", "ARCHIVO FACTURA", "Partida",
 ]
 
 
@@ -218,6 +218,9 @@ def validar_factura(f, cfg, hoy=None):
                 reasons.append('Hay subconceptos sin coste indicado')
         except (ValueError, TypeError, InvalidOperation) as ex:
             reasons.append('Desglose de conceptos no válido: ' + str(ex))
+    conversion_note = importes_salida(f, f.get('total'))[4]
+    if conversion_note and 'pendiente' in conversion_note:
+        reasons.append(conversion_note)
     return list(dict.fromkeys(reasons))
 
 
@@ -332,10 +335,12 @@ def concepto_total(f):
 
 def partida_visible(f):
     # tipo_gasto lo interpreta el agente con las reglas aprobadas y evidencias.
-    category = {'autonomo':'AUTONOMOS', 'consumible':'FUNGIBLES', 'otro':'OTROS GASTOS'}
+    category = {'autonomo':'COLABORADORAS', 'servicio':'COLABORADORAS',
+                'consumible':'OTROS GASTOS', 'otro':'OTROS GASTOS'}
     if f.get('tipo_gasto') in category:
         return category[f['tipo_gasto']]
-    return f.get('partida') if f.get('partida') in category.values() else None
+    legacy = {'AUTONOMOS':'COLABORADORAS', 'FUNGIBLES':'OTROS GASTOS'}
+    return legacy.get(f.get('partida'), f.get('partida') if f.get('partida') in category.values() else None)
 
 
 def identidad_factura(f):
@@ -350,8 +355,22 @@ def identidad_factura(f):
     return (number.strip(),total)
 
 
+def importes_salida(f, amount):
+    """Conserva importes originales y añade los agregados en EUR con el BCE."""
+    if f.get('moneda') == 'EUR':
+        return amount, f.get('base_imponible'), amount, f.get('base_imponible'), None
+    if f.get('moneda') != 'USD':
+        return amount, f.get('base_imponible'), None, None, 'Conversión a EUR pendiente: moneda distinta de EUR/USD o sin identificar'
+    import sys
+    script_dir = str(Path(__file__).resolve().parent)
+    if script_dir not in sys.path:
+        sys.path.insert(0, script_dir)
+    from cambios import convertir
+    return convertir(f.get('fecha'), amount, f.get('base_imponible'))
+
+
 def fila_salida(f, cfg):
-    """Proyección de 18 columnas sin inventar importes ni clasificaciones."""
+    """Proyección de 19 columnas sin inventar importes ni clasificaciones."""
     rules = cfg.get("salida_campos", {})
     try:
         year = date.fromisoformat(f.get("fecha")).year
@@ -371,10 +390,11 @@ def fila_salida(f, cfg):
     accounting_date = f.get("fecha_contable")
     if accounting_date is None and rules.get("fecha_contable") == "fecha_factura":
         accounting_date = f.get("fecha")
+    converted = importes_salida(f, amount)
     return [f.get("receptor"), f.get("proveedor"), f.get("nif_proveedor"),
-            f.get("ext_o_nac"), f.get("pais_proveedor"), pertenencia_ue(f),
+            f.get("pais_proveedor"), pertenencia_ue(f),
             f.get("numero_factura"), f.get("fecha"), year, accounting_date,
-            concepto_completo(f), concepto_total(f), summary, amount, f.get("base_imponible"), iva, None, partida_visible(f)]
+            concepto_completo(f), concepto_total(f), summary, converted[0], converted[1], converted[2], converted[3], iva, None, partida_visible(f)]
 
 
 def marcas_excel(ordered):
@@ -382,6 +402,9 @@ def marcas_excel(ordered):
     marks = []
     for index, result in enumerate(ordered):
         note = result.get('nota_excel') or ''
+        conversion = importes_salida(result['datos'], result['datos'].get('total'))[4]
+        if conversion:
+            note = (note + '\n' + conversion).strip()
         if result.get('marca') == 'DUPLICADA':
             identity = identidad_factura(result['datos'])
             reference = next((i for i, other in enumerate(ordered)

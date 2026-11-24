@@ -14,11 +14,21 @@ REL='http://schemas.openxmlformats.org/officeDocument/2006/relationships'
 PKG='http://schemas.openxmlformats.org/package/2006/relationships'
 
 def incorporar_enlaces(path, archivos):
-    if not any(archivos):
-        return
     path=Path(path)
     with ZipFile(path) as z:
         contents={i.filename:z.read(i.filename) for i in z.infolist()}
+    workbook = ET.fromstring(contents['xl/workbook.xml'])
+    names = workbook.find('{'+MAIN+'}definedNames')
+    if names is None:
+        names = ET.Element('{'+MAIN+'}definedNames')
+        later = {'calcPr', 'oleSize', 'customWorkbookViews', 'pivotCaches', 'smartTagPr', 'smartTagTypes', 'webPublishing', 'fileRecoveryPr', 'webPublishObjects', 'extLst'}
+        position = next((i for i, child in enumerate(workbook) if child.tag.rsplit('}',1)[-1] in later), len(workbook))
+        workbook.insert(position, names)
+    area = next((n for n in names if n.get('name') == '_xlnm.Print_Area'), None)
+    if area is None:
+        area = ET.SubElement(names, '{'+MAIN+'}definedName', {'name':'_xlnm.Print_Area', 'localSheetId':'0'})
+    area.text = "'Facturas'!$A$1:$S$" + str(max(6, len(archivos) + 5))
+    contents['xl/workbook.xml'] = ET.tostring(workbook, encoding='utf-8', xml_declaration=True)
     sheetname='xl/worksheets/sheet1.xml'
     relname='xl/worksheets/_rels/sheet1.xml.rels'
     sheet=ET.fromstring(contents[sheetname])
@@ -35,7 +45,7 @@ def incorporar_enlaces(path, archivos):
             rid+='x'
         used.add(rid)
         ET.SubElement(rels,'{'+PKG+'}Relationship',{'Id':rid,'Type':REL+'/hyperlink','Target':quote('facturas/'+name,safe='/'),'TargetMode':'External'})
-        ET.SubElement(links,'{'+MAIN+'}hyperlink',{'ref':'Q'+str(row),'{'+REL+'}id':rid,'display':'Abrir factura'})
+        ET.SubElement(links,'{'+MAIN+'}hyperlink',{'ref':'R'+str(row),'{'+REL+'}id':rid,'display':'Abrir factura'})
     old=sheet.find('{'+MAIN+'}hyperlinks')
     if old is not None:
         sheet.remove(old)

@@ -61,10 +61,10 @@ class Clientes(unittest.TestCase):
         self.assertEqual(first['duplicadas'],1)
         wb = load_workbook(first['excel'])
         sheet = wb['Facturas']
-        notes = [sheet[f'G{n}'].comment.text for n in range(6,9)]
+        notes = [sheet[f'F{n}'].comment.text for n in range(6,9)]
         self.assertEqual(sum('DUPLICADA' in note for note in notes),1)
         self.assertTrue(any('ilegible' in note for note in notes))
-        self.assertTrue(any('FFF2CC' in sheet[f'A{n}'].fill.fgColor.rgb for n in range(6,9)))
+        self.assertTrue(all(sheet[f'A{n}'].fill.fgColor.rgb.endswith('FFFFFF') for n in range(6,9)))
         wb.close()
         self.assertEqual(c.base.sha256(original),before)
         xhash = c.base.sha256(Path(first['excel']))
@@ -90,12 +90,12 @@ class Clientes(unittest.TestCase):
         self.assertEqual((updated['entrada'],updated['salida'],updated['filas_excel']),(2,2,2))
         self.assertEqual(before,{p.name:c.base.sha256(p) for p in Path(first['carpeta_facturas']).iterdir()})
         wb=load_workbook(updated['excel']); sh=wb['Facturas']
-        self.assertEqual(sh['K6'].value,'- Línea uno\n- Línea dos')
-        self.assertEqual(sh['P6'].value,'21 %')
-        self.assertEqual(sh['Q6'].value,'Abrir factura')
-        self.assertTrue(sh['Q6'].hyperlink.target.startswith('facturas/'))
+        self.assertEqual(sh['J6'].value,'- Línea uno\n- Línea dos')
+        self.assertEqual(sh['Q6'].value,'21 %')
+        self.assertEqual(sh['R6'].value,'Abrir factura')
+        self.assertTrue(sh['R6'].hyperlink.target.startswith('facturas/'))
         self.assertTrue(sh['A6'].fill.fgColor.rgb.endswith('FFFFFF'))
-        self.assertTrue(sh['A7'].fill.fgColor.rgb.endswith('FFF2CC'))
+        self.assertTrue(sh['A7'].fill.fgColor.rgb.endswith('FFFFFF'))
         wb.close()
         correction.write_text(json.dumps({'facturas':[{'archivo_original':'a.pdf','sha256':'incorrecto','subconceptos':['Incorrecto']}]}),encoding='utf-8')
         with self.assertRaises(ValueError):
@@ -233,7 +233,7 @@ class Clientes(unittest.TestCase):
         first = self.completar(self.preparar())
         excel = Path(first['excel'])
         wb = load_workbook(excel); sh = wb['Facturas']
-        sh.delete_cols(18); sh.delete_cols(12)
+        sh.delete_cols(19); sh.delete_cols(15,2); sh.insert_cols(4); sh.cell(5,4,"EXT O NAC"); sh.delete_cols(12)
         table = sh.tables['RegistroFacturas']
         table.ref = 'A5:P6'
         from openpyxl.worksheet.table import TableColumn
@@ -248,8 +248,8 @@ class Clientes(unittest.TestCase):
         self.assertEqual(c.filas_excel(excel),1)
         updated = c.actualizar(self.root,CFG,'Cliente A')
         wb = load_workbook(updated['excel'])
-        self.assertEqual(wb['Facturas'].max_column,18)
-        self.assertIsNotNone(wb['Facturas']['Q6'].hyperlink)
+        self.assertEqual(wb['Facturas'].max_column,19)
+        self.assertIsNotNone(wb['Facturas']['R6'].hyperlink)
         wb.close()
 
     def test_bloqueo_y_otros_archivos(self):

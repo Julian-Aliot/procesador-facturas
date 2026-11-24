@@ -148,10 +148,12 @@ def filas_excel(path):
             raise ValueError('El Excel debe contener una sola tabla')
         table = ET.fromstring(archive.read(tables[0]))
         cols = table.find('m:tableColumns',ns)
-        legacy = [c for c in base.COLUMNAS_SALIDA if c not in {'CONCEPTO TOTAL','Partida'}]
-        if [c.attrib['name'] for c in cols] not in (base.COLUMNAS_SALIDA,legacy,legacy[:-1]):
+        previous = [c for c in base.COLUMNAS_SALIDA if c not in {'IMPORTE TOTAL CONCEPTO EUROS', 'BASE IMPONIBLE EUROS'}]
+        previous.insert(3, 'EXT O NAC')
+        legacy = [c for c in previous if c not in {'CONCEPTO TOTAL','Partida'}]
+        if [c.attrib['name'] for c in cols] not in (base.COLUMNAS_SALIDA,previous,legacy,legacy[:-1]):
             raise ValueError('El Excel no tiene las columnas acordadas')
-        ref = re.fullmatch(r'A5:[OPR](\d+)',table.attrib['ref'])
+        ref = re.fullmatch(r'A5:[OPRS](\d+)',table.attrib['ref'])
         if not ref:
             raise ValueError('Rango de tabla inesperado')
         return int(ref[1]) - 5

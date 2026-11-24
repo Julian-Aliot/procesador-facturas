@@ -1,4 +1,4 @@
 interface:
   display_name: "Procesador de facturas"
-  short_description: "Facturas por cliente, Excel acumulado y enlaces a documentos"
-  default_prompt: "Usa $procesador-facturas para procesar las carpetas de clientes, copiar las facturas renombradas y actualizar un Excel por cliente conservando los originales."
+  short_description: "Facturas por envío, importes originales y euros en un ZIP"
+  default_prompt: "Usa $procesador-facturas para procesar los documentos seleccionados en un envío independiente. Conserva los importes originales, añade sus equivalentes en euros y entrega únicamente el ZIP con Excel y facturas en Drive privado."
